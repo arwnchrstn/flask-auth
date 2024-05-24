@@ -1,7 +1,7 @@
 from src.extensions import db
 from datetime import datetime
 
-class RevokedTokens(db.Model):
+class RevokedTokensModel(db.Model):
   __tablename__ = 'revoked_tokens'
   
   id = db.Column(db.Integer, primary_key=True)

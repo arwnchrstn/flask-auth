@@ -3,9 +3,12 @@ import bcrypt
 
 class UsersModel(db.Model):
   __tablename__ = 'users'
-  id = db.Column(db.Integer(), primary_key=True)
+  
+  id = db.Column(db.Integer, primary_key=True)
   username = db.Column(db.String(155), nullable=False, unique=True)
   password = db.Column(db.String(155), nullable=False)
+  
+  blogs = db.relationship('BlogsModel', back_populates='users', lazy='dynamic', cascade='all, delete')
   
   def __init__(self, username: str, password: str) -> None:
     self.username = username
@@ -19,6 +22,10 @@ class UsersModel(db.Model):
   
   def get_user_data(self):
     return self.check_username_if_exists()
+  
+  @classmethod
+  def get_user_by_id(cls, userId):
+    return cls.query.get(userId)
   
   def save_user(self):
     self.hash_password()
