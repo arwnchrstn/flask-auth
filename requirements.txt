@@ -7,3 +7,5 @@ flask-migrate
 flask-cors
 flask-jwt-extended
 pymysql
+gunicorn
+cryptography

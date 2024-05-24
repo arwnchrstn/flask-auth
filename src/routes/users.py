@@ -2,8 +2,7 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from src.schemas import PlainUserSchema
 from flask import jsonify, request
-from src.models.users import UsersModel
-from src.models.revoked_tokens import RevokedTokens
+from src.models import UsersModel, RevokedTokensModel
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import create_access_token, create_refresh_token, set_refresh_cookies, unset_jwt_cookies, decode_token
 from datetime import timedelta
@@ -15,7 +14,7 @@ load_dotenv()
 
 users_blp = Blueprint('Users', __name__)
 
-@users_blp.route('/signup')
+@users_blp.route('/users/signup')
 class UserSignup(MethodView):
   @users_blp.arguments(PlainUserSchema)
   @users_blp.response(201)
@@ -34,7 +33,7 @@ class UserSignup(MethodView):
     except SQLAlchemyError as e:
       abort(500, message='Database error - An error occured while creating an account', errors=repr(e))
 
-@users_blp.route('/signin')
+@users_blp.route('/users/signin')
 class UserSignin(MethodView):
   @users_blp.arguments(PlainUserSchema)
   @users_blp.response(200)
@@ -52,8 +51,8 @@ class UserSignin(MethodView):
         
       existing_user_data = user.get_user_data()
         
-      access_token = create_access_token(identity=existing_user_data.username, expires_delta=timedelta(minutes=10))
-      refresh_token = create_refresh_token(identity=existing_user_data.username, expires_delta=timedelta(days=7))
+      access_token = create_access_token(identity=existing_user_data.id, expires_delta=timedelta(minutes=10))
+      refresh_token = create_refresh_token(identity=existing_user_data.id, expires_delta=timedelta(days=7))
       
       response = jsonify({'username': existing_user_data.username, 'id': existing_user_data.id, 'access_token': access_token})
       
@@ -63,7 +62,7 @@ class UserSignin(MethodView):
     except SQLAlchemyError as e:
       abort(500, message='Database error - An error occured while creating an account', errors=repr(e))
 
-@users_blp.route('/signout')
+@users_blp.route('/users/signout')
 class UserLogout(MethodView):
   def post(self):
     response = jsonify({'message': 'Logged out'})
@@ -76,7 +75,7 @@ class UserLogout(MethodView):
       
       decodedToken = decode_token(cookie, allow_expired=True)
       if 'jti' in decodedToken:
-        RevokedTokens.add_to_blocklist(decodedToken['jti'])
+        RevokedTokensModel.add_to_blocklist(decodedToken['jti'])
     
       return response 
     except SQLAlchemyError as e:
