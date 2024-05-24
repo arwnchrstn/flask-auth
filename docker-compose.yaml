@@ -1,0 +1,22 @@
+services:
+  database:
+    image: mysql:8.0-debian
+    container_name: flask-auth-db
+    restart: always
+    env_file:
+      - .env.mysql
+    volumes:
+      - mysql_volume:/var/lib/mysql:rw
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask-auth-api
+    env_file:
+      - .env.prod
+    ports:
+      - 5000:80
+    depends_on:
+      - database
+volumes:
+  mysql_volume:

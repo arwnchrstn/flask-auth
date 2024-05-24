@@ -25,24 +25,24 @@ def create_app():
   
   @jwt.expired_token_loader
   def expired_token_cb(jwtHeader, jwtPayload):
-    response = make_response(jsonify({'message': 'Token expired'}), 401)
+    response = jsonify({'message': 'Token expired'})
     unset_jwt_cookies(response)
     
-    return response
+    return response, 401
   
   @jwt.invalid_token_loader
   def invalid_token_cb(error):
-    response = make_response(jsonify({'message': 'Invalid token signature'}), 401)
+    response = jsonify({'message': 'Invalid token signature'})
     unset_jwt_cookies(response)
     
-    return response
+    return response, 401
   
   @jwt.unauthorized_loader
   def unauthorized_token_cb(error):
-    response = make_response(jsonify({'message': 'Missing token'}), 401)
+    response = jsonify({'message': 'Missing token'})
     unset_jwt_cookies(response)
     
-    return response
+    return response, 401
   
   @jwt.token_in_blocklist_loader
   def token_blocklist_cb(jwtHeader, jwtPayload):
@@ -50,10 +50,10 @@ def create_app():
   
   @jwt.revoked_token_loader
   def revoked_token_cb(jwtHeader, jwtPayload):
-    response = make_response(jsonify({'message': 'Token has been revoked and not valid'}), 401)
+    response = jsonify({'message': 'Token has been revoked and not valid'})
     unset_jwt_cookies(response)
     
-    return response
+    return response, 401
   
   return app
 
