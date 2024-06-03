@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-from src.extensions import api, cors, db, jwt, migrate
+from src.extensions import api, cors, db, jwt, migrate, compress
 from src.routes import users_blp, refresh_blp, blogs_blp
 from dotenv import load_dotenv
 from src.models import RevokedTokensModel
@@ -18,6 +18,7 @@ def create_app():
   api.init_app(app)
   jwt.init_app(app)
   migrate.init_app(app, db)
+  compress.init_app(app)
   
   api.register_blueprint(users_blp, url_prefix='/api')
   api.register_blueprint(refresh_blp)

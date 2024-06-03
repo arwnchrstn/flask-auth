@@ -69,13 +69,19 @@ class UserLogout(MethodView):
     
     try:
       cookie = request.cookies.get(getenv('FLASK_JWT_REFRESH_COOKIE_NAME'))
+      access_token = request.headers.get('Authorization').split(' ')[1]
       
       if not cookie:
         return jsonify({'message': 'Logged out'}), 204
       
-      decodedToken = decode_token(cookie, allow_expired=True)
-      if 'jti' in decodedToken:
-        RevokedTokensModel.add_to_blocklist(decodedToken['jti'])
+      decodedRefreshToken = decode_token(cookie, allow_expired=True)
+      if 'jti' in decodedRefreshToken:
+        RevokedTokensModel.add_to_blocklist(decodedRefreshToken['jti'])
+        
+      decodedAccessToken = decode_token(access_token, allow_expired=True)
+      if 'jti' in decodedAccessToken:
+        print('YES')
+        RevokedTokensModel.add_to_blocklist(decodedAccessToken['jti'])
     
       return response 
     except SQLAlchemyError as e:
