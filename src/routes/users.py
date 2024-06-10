@@ -51,10 +51,10 @@ class UserSignin(MethodView):
         
       existing_user_data = user.get_user_data()
         
-      access_token = create_access_token(identity=existing_user_data.id, expires_delta=timedelta(minutes=10))
+      accessToken = create_access_token(identity=existing_user_data.id, expires_delta=timedelta(minutes=10))
       refresh_token = create_refresh_token(identity=existing_user_data.id, expires_delta=timedelta(days=7))
       
-      response = jsonify({'username': existing_user_data.username, 'id': existing_user_data.id, 'access_token': access_token})
+      response = jsonify({'username': existing_user_data.username, 'id': existing_user_data.id, 'accessToken': accessToken})
       
       set_refresh_cookies(response, refresh_token, max_age=timedelta(days=7))
       
@@ -69,7 +69,7 @@ class UserLogout(MethodView):
     
     try:
       cookie = request.cookies.get(getenv('FLASK_JWT_REFRESH_COOKIE_NAME'))
-      access_token = request.headers.get('Authorization').split(' ')[1]
+      accessToken = request.headers.get('Authorization').split(' ')[1]
       
       if not cookie:
         return jsonify({'message': 'Logged out'}), 204
@@ -78,9 +78,8 @@ class UserLogout(MethodView):
       if 'jti' in decodedRefreshToken:
         RevokedTokensModel.add_to_blocklist(decodedRefreshToken['jti'])
         
-      decodedAccessToken = decode_token(access_token, allow_expired=True)
+      decodedAccessToken = decode_token(accessToken, allow_expired=True)
       if 'jti' in decodedAccessToken:
-        print('YES')
         RevokedTokensModel.add_to_blocklist(decodedAccessToken['jti'])
     
       return response 
