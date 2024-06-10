@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from os import getenv
 from datetime import timedelta
 from src.schemas import RefreshTokenSchema
+from src.models import UsersModel
 
 load_dotenv()
 
@@ -26,9 +27,14 @@ class Refresh(MethodView):
       decodedToken = decode_token(refreshToken)
       identity = decodedToken['sub']
       
-      access_token = create_access_token(identity=identity, expires_delta=timedelta(minutes=10))
+      user = UsersModel.get_user_by_id(identity)
       
-      return jsonify({'access_token': access_token})
+      if not user:
+        abort(401, message='Invalid user id')
+      
+      accessToken = create_access_token(identity=identity, expires_delta=timedelta(minutes=10))
+      
+      return jsonify({'accessToken': accessToken, 'username': user.username, 'id': user.id})
     except JWTDecodeError as e:
       abort(400, message='Cannot decode token', errors=repr(e))
     except Exception as e:

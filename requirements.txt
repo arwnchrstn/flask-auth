@@ -9,3 +9,4 @@ flask-jwt-extended
 pymysql
 gunicorn
 cryptography
+flask-compress

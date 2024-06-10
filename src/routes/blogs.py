@@ -1,12 +1,36 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from src.schemas import UserBlogsSchema, AddBlogSchema, FetchBlogSchema
+from src.schemas import UserBlogsSchema, AddBlogSchema, FetchBlogSchema, FetchAllBlogListSchema
 from src.models import UsersModel, BlogsModel
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask import jsonify
+from flask import jsonify, request
 
 blogs_blp = Blueprint('Blogs', __name__)
+
+@blogs_blp.route('/blogs/all')
+class BlogQueryAll(MethodView):
+  @jwt_required()
+  @blogs_blp.response(200, FetchAllBlogListSchema)
+  def get(self):
+    try:
+      page = request.args.get('page', default=1, type=int)
+      page_size = request.args.get('page_size', default=10, type=int)
+      
+      blogs = BlogsModel.query.paginate(page=page, per_page=page_size, error_out=False)
+      
+      allBlogs = {
+        'count': blogs.total,
+        'pages': blogs.pages,
+        'blogs': blogs.items,
+        'next_page': page + 1 if blogs.has_next else None,
+        'prev_page': page - 1 if blogs.has_prev else None,
+        'page_size': blogs.per_page
+      }
+        
+      return allBlogs
+    except SQLAlchemyError as e:
+      abort(500, message='Database error - An error occured while fetching blogs', errors=repr(e))
 
 @blogs_blp.route('/blogs')
 class BlogQuery(MethodView):
